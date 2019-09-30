@@ -51,7 +51,7 @@ print("annonceur opt :",annonceurs)
 
 
 def ucb(u,s,t):
-    return argmax(u+np.sqrt(2*np.log(t)/s))
+    return np.argmax(u+np.sqrt(2*np.log(t)/s))
 
 def evaluate_ucb(tab_ann):
     u=np.zeros(tab_ann.shape[1])
