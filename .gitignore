@@ -2,3 +2,7 @@
 */.DS_Store/*
 *.DS_Store*
 *__pycache__*
+TME/grid_world_gym/env/gridworld-v0/random-agent-results/openaigym.episode_batch.0.11150.stats.json
+TME/grid_world_gym/env/gridworld-v0/random-agent-results/openaigym.manifest.0.11150.manifest.json
+
+*.json

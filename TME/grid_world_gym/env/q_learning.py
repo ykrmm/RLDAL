@@ -55,20 +55,25 @@ class Q_Learning(object):
 
 if __name__ == "__main__":
     env = gym.make("gridworld-v0")
-    env.setPlan("gridworldPlans/plan4.txt", {0: -0.03, 3: 1, 4: 2, 5: -1, 6: -1})
+    env.setPlan("gridworldPlans/plan2.txt", {0: -0.03, 3: 1, 4: 20, 5: -1, 6: -1})
     env.seed(0)  # Initialise le seed du pseudo-random
     print(env.action_space)  # Quelles sont les actions possibles
     print(env.step(1))  # faire action 1 et retourne l'observation, le reward, et un done un booleen (jeu fini ou pas)
     env.render()  # permet de visualiser la grille du jeu 
     env.render(mode="human") #visualisation sur la console
-    statedic, mdp = env.getMDP()  # recupere le mdp : statedic
-    print("Nombre d'etats : ",len(statedic))  # nombre d'etats ,statedic : etat-> numero de l'etat
-    state, transitions = list(mdp.items())[0]
-    print(state)  # un etat du mdp
-    print(transitions)  # dictionnaire des transitions pour l'etat :  {action-> [proba,etat,reward,done]}
+   
+    statedic, mdp = env.getMDP()
+
+#    print(env.states) 
+
+    # recupere le mdp : statedic
+    #print("Nombre d'etats : ",len(statedic))  # nombre d'etats ,statedic : etat-> numero de l'etat
+    #state, transitions = list(mdp.items())[0]
+    #print(state)  # un etat du mdp
+    #print(transitions)  # dictionnaire des transitions pour l'etat :  {action-> [proba,etat,reward,done]}
 
     # Execution avec un Agent
-    agent = Q_Learning(env,learning_rate=10e-4,discount=0.999,epsilon=0.05)
+    agent = Q_Learning(env,learning_rate=10e-4,discount=0.999,epsilon=0.15)
     # Faire un fichier de log sur plusieurs scenarios
     outdir = 'gridworld-v0/random-agent-results'
     envm = wrappers.Monitor(env, directory=outdir, force=True, video_callable=False)
