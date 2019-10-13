@@ -9,43 +9,57 @@ import numpy as np
 import copy
 
 """
-Algo Q learning
+Algo Dyna_Q
 """
 
-class Q_Learning(object):
-    """Q Learning Agent"""
+class Dyna_Q(object):
+    """Dyna_Q Agent"""
 
-    def __init__(self,env,learning_rate,discount,epsilon=0.1):
+    def __init__(self,env,learning_rate,discount,planning_step,epsilon=0.1):
         self.env=env
         self.action_space=env.action_space
         self.Q = {}
-        #self.Q = np.zeros((len(self.state),self.action_space.n))
+        self.Model = {}
         self.epsilon = epsilon
         self.learning_rate = learning_rate
         self.discount = discount
         self.lastobs = None 
         self.lasta = None
+        self.planning_step = planning_step
     def act(self, observation, reward, done):
         
         state=self.env.state2str(observation)
-        self.obs = state           #self.env.states[tmp]
+        self.obs = state           
         self.Q.setdefault(state,[0,0,0,0])
+        self.model.setdefault(state,[0,0,0,0])
         self.reward = reward
         if np.random.random() < 1 - self.epsilon:
             action = np.argmax(self.Q[self.obs])
         else : 
             action = np.random.randint(self.action_space.n)
-
         self.update_Q(action)
+        if not self.lastobs==None : 
+            self.planning()
+            
         return action
+
+    def planning(self):
+        for i in range(self.planning_step):
+            st = np.random.choice(list(self.model.keys()))
+            action = np.random.randint(self.action_space.n)
+            reward, st1 = self.model[st][action]
+            self.Q[st][action] += self.learning_rate*(self.reward +\
+                self.discount*np.max(self.Q[st1])-self.Q[st][action])
+
 
     def update_Q(self,action):
         if not self.lastobs==None:
             st = self.lastobs
             st1 = self.obs
-            self.Q[st][self.lasta] += self.learning_rate*(self.reward +\
-                self.discount*np.max(self.Q[st1])-self.Q[st][self.lasta]) #+= ????
-        
+            self.Q[st][self.lasta] += self.learning_rate*(self.reward +\   
+                self.discount*np.max(self.Q[st1])-self.Q[st][self.lasta]) #+= ??? pas sur... 
+
+            self.model[st][self.lasta]=(self.reward,st1) # update model
         self.lastobs = self.obs 
         self.lasta = action
         
@@ -73,7 +87,7 @@ if __name__ == "__main__":
     #print(transitions)  # dictionnaire des transitions pour l'etat :  {action-> [proba,etat,reward,done]}
 
     # Execution avec un Agent
-    agent = Q_Learning(env,learning_rate=10e-4,discount=0.999,epsilon=0.1)
+    agent = Dyna_Q(env,learning_rate=10e-4,discount=0.999,epsilon=0.1)
     # Faire un fichier de log sur plusieurs scenarios
     outdir = 'gridworld-v0/random-agent-results'
     envm = wrappers.Monitor(env, directory=outdir, force=True, video_callable=False)

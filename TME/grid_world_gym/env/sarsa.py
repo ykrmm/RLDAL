@@ -9,11 +9,11 @@ import numpy as np
 import copy
 
 """
-Algo Q learning
+Algo SARSA
 """
 
-class Q_Learning(object):
-    """Q Learning Agent"""
+class SARSA(object):
+    """SARSA Agent"""
 
     def __init__(self,env,learning_rate,discount,epsilon=0.1):
         self.env=env
@@ -44,7 +44,7 @@ class Q_Learning(object):
             st = self.lastobs
             st1 = self.obs
             self.Q[st][self.lasta] += self.learning_rate*(self.reward +\
-                self.discount*np.max(self.Q[st1])-self.Q[st][self.lasta]) #+= ????
+                self.discount*self.Q[st1][action]-self.Q[st][self.lasta]) #+= ????
         
         self.lastobs = self.obs 
         self.lasta = action
@@ -55,7 +55,7 @@ class Q_Learning(object):
 
 if __name__ == "__main__":
     env = gym.make("gridworld-v0")
-    env.setPlan("gridworldPlans/plan6.txt", {0: -0.03, 3: 1, 4: 1, 5: -1, 6: -1})
+    env.setPlan("gridworldPlans/plan9.txt", {0: -0.03, 3: 1, 4: 1, 5: -1, 6: -1})
     env.seed(0)  # Initialise le seed du pseudo-random
     print(env.action_space)  # Quelles sont les actions possibles
     print(env.step(1))  # faire action 1 et retourne l'observation, le reward, et un done un booleen (jeu fini ou pas)
@@ -73,7 +73,7 @@ if __name__ == "__main__":
     #print(transitions)  # dictionnaire des transitions pour l'etat :  {action-> [proba,etat,reward,done]}
 
     # Execution avec un Agent
-    agent = Q_Learning(env,learning_rate=10e-4,discount=0.999,epsilon=0.1)
+    agent = SARSA(env,learning_rate=10e-4,discount=0.999,epsilon=0.1)
     # Faire un fichier de log sur plusieurs scenarios
     outdir = 'gridworld-v0/random-agent-results'
     envm = wrappers.Monitor(env, directory=outdir, force=True, video_callable=False)
