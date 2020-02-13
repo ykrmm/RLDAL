@@ -6,3 +6,7 @@ TME/grid_world_gym/env/gridworld-v0/random-agent-results/openaigym.episode_batch
 TME/grid_world_gym/env/gridworld-v0/random-agent-results/openaigym.manifest.0.11150.manifest.json
 
 *.json
+
+*Jan19*/
+TME/VAE/runs/Jan19_14-40-28_MacBook-Air-de-Yannis.local/
+*/runs/Jan19_14-40-28_MacBook-Air-de-Yannis.local/

@@ -150,8 +150,8 @@ if __name__ == '__main__':
     def loss_VAE(x,x_decode,mu,sigma):
 
         KLD = -0.5 * torch.sum(1 + sigma - mu.pow(2) - sigma.exp())
-        criterion = torch.nn.BCELoss() 
-        BCE = criterion(x_decode,x,reduction='sum')
+        criterion = torch.nn.BCELoss(reduction='sum') 
+        BCE = criterion(x_decode,x)
 
         return KLD + BCE
 
