@@ -8,9 +8,10 @@ import numpy as np
 import copy
 import torch
 from torch import nn
+import matplotlib.pyplot as plt
 
 device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-device=torch.device('cpu')
+#device=torch.device('cpu')
 
 #https://pastebin.com/ZH4gEELb
 
@@ -26,6 +27,7 @@ class NN_V(torch.nn.Module):
         self.layers.append(nn.Linear(inSize,outSize))
     def forward(self,x):
         x = self.layers[0](x)
+        
         for i in range(1,len(self.layers)):
             x  = self.tan(x)
             x = self.layers[i](x)
@@ -83,6 +85,8 @@ class A2C_Agent(object):
         self.T_max=T_max
         self.t=0
         self.t_start=self.t
+        self.tab_loss_pi=[]
+        self.tab_loss_V=[]
 
     def act(self, observation, reward, done):
         
@@ -116,7 +120,9 @@ class A2C_Agent(object):
 
         if terminal:
             R=torch.zeros(1).to(device)
+            #print("oui")
         else:
+            #print("non")
             with torch.no_grad():
                 R=self.V(self.stock_states[0]['state'].float().to(device))
 
@@ -144,12 +150,14 @@ class A2C_Agent(object):
         #print("terminal ?",terminal)
         #print("lossPi",lossPi)
         if type(lossPi) is not int:
-            lossPi.backward()
+            self.tab_loss_pi.append(lossPi.mean().item())
+            lossPi.mean().backward()
             self.optimPi.step()
             self.optimPi.zero_grad()
         
         if type(lossV) is not int:
-            lossV.backward()
+            self.tab_loss_V.append(lossV.mean().item())
+            lossV.mean().backward()
             self.optimV.step()
             self.optimV.zero_grad()
 
@@ -157,7 +165,14 @@ class A2C_Agent(object):
         
 
 
+class RandomAgent(object):
+    """The world's simplest agent!"""
 
+    def __init__(self, action_space):
+        self.action_space = action_space
+
+    def act(self, observation, reward, done):
+        return self.action_space.sample()
 
 if __name__ == '__main__':
 
@@ -173,13 +188,14 @@ if __name__ == '__main__':
     env.seed(0)
 
     episode_count = 1000000
-    episode_count=20000
+    episode_count=1200
     reward = 0
     done = False
     env.verbose = True
     np.random.seed(5)
     rsum = 0
-
+    reward_a2c=[]
+    reward_random=[]
     for i in range(episode_count):
         agent.t=0
         agent.t_start=0
@@ -202,6 +218,69 @@ if __name__ == '__main__':
                 agent.update(terminal=True)
                 print("Episode : " + str(i) + " rsum=" + str(rsum) + ", " + str(j) + " actions")
                 break
+        reward_a2c.append(rsum)
 
+    plt.plot(range(len(agent.tab_loss_pi)),agent.tab_loss_pi,label="ACTOR")
+    plt.plot(range(len(agent.tab_loss_V)),agent.tab_loss_V,label="CRITIC")
+    plt.legend()
+    #plt.show()
+    plt.savefig("losses.png")
+    plt.figure()
+    plt.plot(range(len(agent.tab_loss_pi)),agent.tab_loss_pi,label="ACTOR")
+    plt.legend()
+
+    plt.savefig("loss_pi.png")
+    plt.figure()
+    plt.plot(range(len(agent.tab_loss_V)),agent.tab_loss_V,label="CRITIC")
+    #plt.show()
+    plt.legend()
+
+    plt.savefig("loss_V.png")
+    agent = RandomAgent(env.action_space)
+    env.seed(0)
+
+    reward = 0
+    done = False
+    env.verbose = True
+    np.random.seed(5)
+    rsum = 0
+    print("allo")
+    for i in range(episode_count):
+        obs = envm.reset()
+        env.verbose = (i % 100 == 0 and i > 0)  # afficher 1 episode sur 100
+        if env.verbose:
+            env.render()
+        j = 0
+        rsum = 0
+        while True:
+            action = agent.act(obs, reward, done)
+            obs, reward, done, _ = envm.step(action)
+            rsum += reward
+            j += 1
+            if env.verbose:
+                env.render()
+            if done:
+                print("Episode : " + str(i) + " rsum=" + str(rsum) + ", " + str(j) + " actions")
+                break
+        reward_random.append(rsum)
+
+
+    plt.figure()
+    plt.plot(range(len(reward_a2c)),reward_a2c,label="A2C")
+    plt.plot(range(len(reward_a2c)),reward_random,label="Random")
+    plt.legend()
+    plt.savefig("reward.png")
     print("done")
+
+    a2c_cumu=[0]
+    random_cumu=[0]
+    for i in range(len(reward_a2c)):
+        a2c_cumu.append(reward_a2c[i]+a2c_cumu[-1])
+        random_cumu.append(reward_random[i]+random_cumu[-1])
+
+    plt.figure()
+    plt.plot(range(len(a2c_cumu)),a2c_cumu,label="A2C")
+    plt.plot(range(len(a2c_cumu)),random_cumu,label="Random")
+    plt.legend()
+    plt.savefig("reward_cumu.png")    
     env.close()

@@ -1,6 +1,6 @@
 import matplotlib
 
-matplotlib.use("TkAgg")
+#matplotlib.use("TkAgg")
 import gym
 import gridworld
 from gym import wrappers, logger
@@ -30,7 +30,7 @@ if __name__ == '__main__':
     envm = wrappers.Monitor(env, directory=outdir, force=True, video_callable=False)
     env.seed(0)
 
-    episode_count = 1000000
+    episode_count = 10000
     reward = 0
     done = False
     env.verbose = True
@@ -39,7 +39,7 @@ if __name__ == '__main__':
     env._max_episode_steps = 200
     for i in range(episode_count):
         obs = envm.reset()
-        env.verbose = (i % 100 == 0 and i > 0)  # afficher 1 episode sur 100
+        env.verbose = (i % 200 == 0 and i > 0)  # afficher 1 episode sur 100
         if env.verbose:
             env.render()
         j = 0
